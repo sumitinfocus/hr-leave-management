@@ -20,6 +20,7 @@ export default function Dashboard(){
       <div style={{display:'flex',gap:8,marginBottom:12}}>
         <a href="/apply"><button>Apply Leave</button></a>
         <a href="/approvals"><button>Approvals</button></a>
+        <a href="/holidays"><button>Holidays</button></a>
       </div>
       <table>
         <thead><tr><th>Type</th><th>Start</th><th>End</th><th>Status</th></tr></thead>
