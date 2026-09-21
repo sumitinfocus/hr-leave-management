@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Employee {
+  id             Int       @id @default(autoincrement())
+  firstName      String
+  lastName       String
+  email          String    @unique
+  passwordHash   String
+  managerId      Int?
+  manager        Employee? @relation("ManagerEmployees", fields: [managerId], references: [id])
+  subordinates   Employee[] @relation("ManagerEmployees")
+  departmentId   Int
+  department     Department @relation(fields: [departmentId], references: [id])
+  plant          String?
+  location       String?
+  role           String
+  hireDate       DateTime @default(now())
+  leaveEntitlements LeaveEntitlement[]
+  leaveApplications LeaveApplication[]
+}
+
+model Department {
+  id        Int       @id @default(autoincrement())
+  name      String
+  employees Employee[]
+}
+
+model LeaveEntitlement {
+  id         Int      @id @default(autoincrement())
+  year       Int
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  employeeId Int
+  casual     Int
+  privilege  Int
+  sick       Int
+  maternity  Int
+  paternity  Int
+  officialTour Int
+}
+
+model LeaveApplication {
+  id           Int      @id @default(autoincrement())
+  employee     Employee @relation(fields: [employeeId], references: [id])
+  employeeId   Int
+  type         LeaveType
+  startDate    DateTime
+  endDate      DateTime
+  reason       String?
+  status       LeaveStatus @default(PENDING)
+  appliedAt    DateTime @default(now())
+  approvedById Int?
+  approvedBy   Employee? @relation("Approvals", fields: [approvedById], references: [id])
+}
+
+model Holiday {
+  id        Int     @id @default(autoincrement())
+  name      String
+  date      DateTime
+  location  String
+  plant     String
+  year      Int
+  isPaid    Boolean @default(true)
+}
+
+enum LeaveType {
+  CASUAL
+  PRIVILEGE
+  SICK
+  MATERNITY
+  PATERNITY
+  OFFICIAL_TOUR
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
