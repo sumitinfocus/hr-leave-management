@@ -8,22 +8,23 @@ datasource db {
 }
 
 model Employee {
-  id             Int       @id @default(autoincrement())
-  firstName      String
-  lastName       String
-  email          String    @unique
-  passwordHash   String
-  managerId      Int?
-  manager        Employee? @relation("ManagerEmployees", fields: [managerId], references: [id])
-  subordinates   Employee[] @relation("ManagerEmployees")
-  departmentId   Int
-  department     Department @relation(fields: [departmentId], references: [id])
-  plant          String?
-  location       String?
-  role           String
-  hireDate       DateTime @default(now())
-  leaveEntitlements LeaveEntitlement[]
-  leaveApplications LeaveApplication[]
+  id                 Int                @id @default(autoincrement())
+  firstName          String
+  lastName           String
+  email              String             @unique
+  passwordHash       String
+  managerId          Int?
+  manager            Employee?          @relation("ManagerEmployees", fields: [managerId], references: [id])
+  subordinates       Employee[]         @relation("ManagerEmployees")
+  departmentId       Int
+  department         Department         @relation(fields: [departmentId], references: [id])
+  plant              String?
+  location           String?
+  role               String
+  hireDate           DateTime           @default(now())
+  leaveEntitlements  LeaveEntitlement[]
+  leaveApplications  LeaveApplication[]
+  approvedApplications LeaveApplication[] @relation("Approvals")
 }
 
 model Department {
@@ -46,17 +47,17 @@ model LeaveEntitlement {
 }
 
 model LeaveApplication {
-  id           Int      @id @default(autoincrement())
-  employee     Employee @relation(fields: [employeeId], references: [id])
+  id           Int         @id @default(autoincrement())
+  employee     Employee    @relation(fields: [employeeId], references: [id])
   employeeId   Int
   type         LeaveType
   startDate    DateTime
   endDate      DateTime
   reason       String?
   status       LeaveStatus @default(PENDING)
-  appliedAt    DateTime @default(now())
+  appliedAt    DateTime    @default(now())
   approvedById Int?
-  approvedBy   Employee? @relation("Approvals", fields: [approvedById], references: [id])
+  approvedBy   Employee?   @relation("Approvals", fields: [approvedById], references: [id])
 }
 
 model Holiday {

@@ -5,6 +5,8 @@ import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import ApplyLeave from './pages/ApplyLeave'
 import ManagerApprovals from './pages/ManagerApprovals'
+import Holidays from './pages/Holidays'
+import Reports from './pages/Reports'
 import './styles.css'
 
 function App(){
@@ -15,6 +17,8 @@ function App(){
         <Route path="/login" element={<Login/>} />
         <Route path="/apply" element={token ? <ApplyLeave/> : <Navigate to="/login" />} />
         <Route path="/approvals" element={token ? <ManagerApprovals/> : <Navigate to="/login" />} />
+        <Route path="/holidays" element={token ? <Holidays/> : <Navigate to="/login" />} />
+        <Route path="/reports" element={token ? <Reports/> : <Navigate to="/login" />} />
         <Route path="/" element={token ? <Dashboard/> : <Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
