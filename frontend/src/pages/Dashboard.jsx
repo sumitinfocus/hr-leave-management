@@ -48,23 +48,15 @@ export default function Dashboard(){
 
   return (
     <div className="container dashboard-page">
-      <div className="topbar">
-        <div className="brand-row">
-          <span className="brand-mark">N</span>
-          <span>Northstar Labs</span>
+      <div className="mobile-page-toolbar">
+        <div>
+          <span className="eyebrow dark">Employee portal</span>
+          <strong>My workspace</strong>
         </div>
-
-        <div className="topbar-actions">
-          <a href="/holidays" className="nav-link">Holidays</a>
-          <a href="/approvals" className="nav-link">Approvals</a>
-          <a href="/reports" className="nav-link">Reports</a>
-          <a href="/apply" className="nav-link">Apply Leave</a>
-
-          <div className="user-menu">
-            <div className="notification-dot">3</div>
-            <div className="avatar-pill">AL</div>
-            <ThemeToggle />
-          </div>
+        <div className="user-menu">
+          <div className="notification-dot">3</div>
+          <div className="avatar-pill">AL</div>
+          <ThemeToggle />
         </div>
       </div>
 
