@@ -25,6 +25,19 @@ export default function ManagerApprovals(){
     fetchPending()
   }
 
+  function employeeName(employee){
+    if (!employee) return 'Unknown employee'
+    return [employee.firstName, employee.lastName].filter(Boolean).join(' ') || 'Unknown employee'
+  }
+
+  function leaveDays(startDate, endDate){
+    const start = new Date(startDate)
+    const end = new Date(endDate)
+    const startUtc = Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate())
+    const endUtc = Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate())
+    return Math.max(1, Math.round((endUtc - startUtc) / 86400000) + 1)
+  }
+
   return (
     <div className="container page-shell">
       <div className="page-header card">
@@ -46,14 +59,17 @@ export default function ManagerApprovals(){
           <div className="empty-panel">No pending requests</div>
         ) : (
           <table>
-            <thead><tr><th>Employee</th><th>Type</th><th>Start</th><th>End</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Name</th><th>Email address</th><th>Type</th><th>Start</th><th>End</th><th>Days</th><th>Reason</th><th>Actions</th></tr></thead>
             <tbody>
               {pending.map(p=> (
                 <tr key={p.id}>
-                  <td>{p.employeeId}</td>
+                  <td>{employeeName(p.employee)}</td>
+                  <td>{p.employee?.email || 'Unavailable'}</td>
                   <td>{p.type}</td>
                   <td>{new Date(p.startDate).toLocaleDateString()}</td>
                   <td>{new Date(p.endDate).toLocaleDateString()}</td>
+                  <td>{leaveDays(p.startDate, p.endDate)}</td>
+                  <td className="reason-cell">{p.reason || 'No reason provided'}</td>
                   <td className="action-cell">
                     <button className="approve-btn" onClick={()=>approve(p.id)}>Approve</button>
                     <button className="reject-btn" onClick={()=>reject(p.id)}>Reject</button>

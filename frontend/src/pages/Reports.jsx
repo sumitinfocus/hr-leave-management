@@ -11,8 +11,6 @@ export default function Reports(){
   const [deptId, setDeptId] = useState('')
   const [summary, setSummary] = useState(null)
 
-  const chartData = [62, 76, 68, 85, 90, 72]
-
   async function fetchSummary(){
     const res = await axios.get(`http://localhost:4000/api/report/department/${deptId}/summary`, { headers: authHeaders() })
     setSummary(res.data)
@@ -43,7 +41,7 @@ export default function Reports(){
             const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'
             document.documentElement.setAttribute('data-theme', next)
             localStorage.setItem('theme', next)
-          }} aria-label="Toggle theme">?</button>
+          }} aria-label="Toggle theme">Theme</button>
         </div>
       </div>
 
@@ -68,9 +66,9 @@ export default function Reports(){
       </div>
 
       <div className="kpi-grid">
-        <div className="card kpi-card"><span className="kpi-label">Avg. approval time</span><strong>2.4 days</strong><small>? 18%</small></div>
-        <div className="card kpi-card"><span className="kpi-label">Open requests</span><strong>14</strong><small>? 3</small></div>
-        <div className="card kpi-card"><span className="kpi-label">Utilization</span><strong>72%</strong><small>Healthy</small></div>
+        <div className="card kpi-card"><span className="kpi-label">Total requests</span><strong>{summary?.total ?? '-'}</strong><small>Selected department</small></div>
+        <div className="card kpi-card"><span className="kpi-label">Open requests</span><strong>{summary?.byStatus?.PENDING ?? '-'}</strong><small>Pending approval</small></div>
+        <div className="card kpi-card"><span className="kpi-label">Approved requests</span><strong>{summary?.byStatus?.APPROVED ?? '-'}</strong><small>Selected department</small></div>
       </div>
 
       <div className="card chart-panel large-panel">
@@ -79,12 +77,16 @@ export default function Reports(){
           <span className="chip neutral">Q3 snapshot</span>
         </div>
         <div className="chart-bars">
-          {chartData.map((value, index) => (
-            <div key={index} className="bar-column">
-              <span className="bar" style={{ height: `${value}%` }} />
-              <small>{['Jan','Feb','Mar','Apr','May','Jun'][index]}</small>
+          {['PENDING', 'APPROVED', 'REJECTED'].map(status => {
+            const value = summary?.byStatus?.[status] || 0
+            const max = Math.max(1, ...Object.values(summary?.byStatus || {}).map(Number))
+            return (
+            <div key={status} className="bar-column">
+              <span className="bar" style={{ height: `${Math.max(8, (value / max) * 100)}%` }} title={`${value} ${status.toLowerCase()} request(s)`} />
+              <small>{status}</small>
             </div>
-          ))}
+            )
+          })}
         </div>
       </div>
 

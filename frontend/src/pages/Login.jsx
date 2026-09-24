@@ -11,6 +11,7 @@ export default function Login(){
     try{
       const res = await axios.post('http://localhost:4000/api/auth/login', { email, password })
       localStorage.setItem('token', res.data.token)
+      localStorage.setItem('user', JSON.stringify(res.data.user))
       window.location.href = '/'
     }catch(err){
       setError('Invalid credentials')
@@ -51,7 +52,7 @@ export default function Login(){
             <label className="field-label">Password</label>
             <input placeholder="Password" type="password" value={password} onChange={e=>setPassword(e.target.value)} />
             <button type="submit" className="primary-btn">Login</button>
-            <button type="button" className="secondary-btn">Request access</button>
+            <button type="button" className="secondary-btn" onClick={() => window.location.href = '/register'}>Request access</button>
             {error && <div className="error">{error}</div>}
           </form>
         </div>

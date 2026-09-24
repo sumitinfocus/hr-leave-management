@@ -20,14 +20,15 @@ router.get('/my', authMiddleware, async (req, res)=>{
 // Get pending applications for manager (show subordinate requests) or HR
 router.get('/pending', authMiddleware, async (req, res) =>{
   const user = req.user
+  const includeEmployee = { employee: { select: { email: true, firstName: true, lastName: true } } }
   if(user.role === 'HR_ADMIN'){
-    const apps = await prisma.leaveApplication.findMany({ where: { status: 'PENDING' }, orderBy: { appliedAt: 'desc' } })
+    const apps = await prisma.leaveApplication.findMany({ where: { status: 'PENDING' }, include: includeEmployee, orderBy: { appliedAt: 'desc' } })
     return res.json(apps)
   }
   // manager: fetch subordinates
   const subordinates = await prisma.employee.findMany({ where: { managerId: user.userId } })
   const subIds = subordinates.map(s => s.id)
-  const apps = await prisma.leaveApplication.findMany({ where: { employeeId: { in: subIds }, status: 'PENDING' }, orderBy: { appliedAt: 'desc' } })
+  const apps = await prisma.leaveApplication.findMany({ where: { employeeId: { in: subIds }, status: 'PENDING' }, include: includeEmployee, orderBy: { appliedAt: 'desc' } })
   res.json(apps)
 })
 

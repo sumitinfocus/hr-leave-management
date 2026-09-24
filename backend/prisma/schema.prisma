@@ -21,10 +21,16 @@ model Employee {
   plant              String?
   location           String?
   role               String
+  active             Boolean            @default(true)
   hireDate           DateTime           @default(now())
+  mustChangePassword Boolean            @default(false)
   leaveEntitlements  LeaveEntitlement[]
   leaveApplications  LeaveApplication[]
   approvedApplications LeaveApplication[] @relation("Approvals")
+  timesheets         Timesheet[]
+  approvedTimesheets Timesheet[] @relation("TimesheetApprovals")
+  performanceReviews         PerformanceReview[] @relation("EmployeeReviews")
+  managedPerformanceReviews  PerformanceReview[] @relation("ManagerReviews")
 }
 
 model Department {
@@ -58,6 +64,8 @@ model LeaveApplication {
   appliedAt    DateTime    @default(now())
   approvedById Int?
   approvedBy   Employee?   @relation("Approvals", fields: [approvedById], references: [id])
+  sourceMessageId String?   @unique
+  sourceEmailSubject String?
 }
 
 model Holiday {
@@ -79,8 +87,152 @@ enum LeaveType {
   OFFICIAL_TOUR
 }
 
+// Admin-editable master data driving labels/defaults/active state for each
+// LeaveType enum value. The enum itself stays fixed (data integrity for
+// existing applications); this table lets HR customize how each type is
+// presented and defaulted without a schema change.
+model LeaveTypePolicy {
+  id                Int       @id @default(autoincrement())
+  code              LeaveType @unique
+  label             String
+  defaultAnnualDays Int       @default(0)
+  color             String    @default("#7c3aed")
+  active            Boolean   @default(true)
+  updatedAt         DateTime  @updatedAt
+}
+
 enum LeaveStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+enum EmailProcessingStatus {
+  PROCESSED
+  IGNORED
+  FAILED
+}
+
+model EmailProcessing {
+  id               Int                   @id @default(autoincrement())
+  provider         String
+  messageId        String                @unique
+  subject          String
+  senderEmail      String?
+  receivedAt       DateTime?
+  status           EmailProcessingStatus
+  leaveApplicationId Int?
+  errorMessage     String?
+  processedAt      DateTime              @default(now())
+}
+
+enum TimesheetPeriodType {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum TimesheetStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+model Timesheet {
+  id                Int                @id @default(autoincrement())
+  employee          Employee           @relation(fields: [employeeId], references: [id])
+  employeeId        Int
+  periodType        TimesheetPeriodType
+  periodStart       DateTime
+  periodEnd         DateTime
+  vendorName        String?
+  staffName         String?
+  projectCode       String?
+  assignmentName    String?
+  taskCode          String?
+  daysWorked        Int?
+  approverName      String?
+  status            TimesheetStatus    @default(DRAFT)
+  rejectionReason   String?
+  sourceFingerprint String?            @unique
+  submittedAt       DateTime?
+  approvedAt        DateTime?
+  approvedBy        Employee?          @relation("TimesheetApprovals", fields: [approvedById], references: [id])
+  approvedById      Int?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  entries           TimesheetEntry[]
+  history           TimesheetStatusHistory[]
+  imports           TimesheetImport[]
+
+  @@index([employeeId, periodStart])
+  @@index([status, periodStart])
+}
+
+model TimesheetEntry {
+  id         Int       @id @default(autoincrement())
+  timesheet  Timesheet @relation(fields: [timesheetId], references: [id], onDelete: Cascade)
+  timesheetId Int
+  workDate   DateTime
+  dayName    String?
+  timeIn     DateTime?
+  timeOut    DateTime?
+  activities String?
+}
+
+model TimesheetStatusHistory {
+  id          Int            @id @default(autoincrement())
+  timesheet   Timesheet      @relation(fields: [timesheetId], references: [id], onDelete: Cascade)
+  timesheetId Int
+  status      TimesheetStatus
+  comment     String?
+  changedById Int?
+  changedAt   DateTime       @default(now())
+}
+
+model TimesheetImport {
+  id                Int       @id @default(autoincrement())
+  sourceType        String
+  sourceFingerprint String    @unique
+  originalName      String?
+  status            String
+  errorMessage      String?
+  timesheetId       Int?
+  timesheet         Timesheet? @relation(fields: [timesheetId], references: [id])
+  createdAt         DateTime  @default(now())
+}
+
+enum PerformanceReviewStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+// Half-yearly self-assessment ("Level Up" screen). Scores are stored as a
+// fixed JSON shape { communication, ownership, technical, teamwork, delivery }
+// each rated 1-5, kept as Json instead of a child table since the category
+// set is fixed and this keeps the review record simple to read/write as one unit.
+model PerformanceReview {
+  id               Int                     @id @default(autoincrement())
+  employee         Employee                @relation("EmployeeReviews", fields: [employeeId], references: [id])
+  employeeId       Int
+  manager          Employee?               @relation("ManagerReviews", fields: [managerId], references: [id])
+  managerId        Int?
+  period           String                  // e.g. "2026-H1"
+  status           PerformanceReviewStatus @default(DRAFT)
+  scores           Json                    // employee self-assessment scores, 1-5 per category
+  employeeComments String?
+  managerScores    Json?                   // manager-adjusted scores, if changed during review
+  managerComments  String?
+  overallScore     Float?
+  level            String?
+  submittedAt      DateTime?
+  reviewedAt       DateTime?
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+
+  @@unique([employeeId, period])
+  @@index([managerId, status])
 }
