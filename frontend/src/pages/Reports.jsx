@@ -11,6 +11,8 @@ export default function Reports(){
   const [deptId, setDeptId] = useState('')
   const [summary, setSummary] = useState(null)
 
+  const chartData = [62, 76, 68, 85, 90, 72]
+
   async function fetchSummary(){
     const res = await axios.get(`http://localhost:4000/api/report/department/${deptId}/summary`, { headers: authHeaders() })
     setSummary(res.data)

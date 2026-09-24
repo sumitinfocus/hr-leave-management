@@ -15,27 +15,32 @@ import EmployeeMaster from './pages/EmployeeMaster'
 import LeaveTypeMaster from './pages/LeaveTypeMaster'
 import Performance from './pages/Performance'
 import PerformanceApprovals from './pages/PerformanceApprovals'
+import AppLayout from './components/AppLayout'
 import './styles.css'
 
-function App(){
+function Protected({ children }) {
   const token = localStorage.getItem('token')
+  return token ? <AppLayout>{children}</AppLayout> : <Navigate to="/login" />
+}
+
+function App(){
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login/>} />
         <Route path="/register" element={<Register/>} />
-        <Route path="/apply" element={token ? <ApplyLeave/> : <Navigate to="/login" />} />
-        <Route path="/approvals" element={token ? <ManagerApprovals/> : <Navigate to="/login" />} />
-        <Route path="/holidays" element={token ? <Holidays/> : <Navigate to="/login" />} />
-        <Route path="/reports" element={token ? <Reports/> : <Navigate to="/login" />} />
-        <Route path="/timesheets" element={token ? <Timesheets/> : <Navigate to="/login" />} />
-        <Route path="/timesheet-approvals" element={token ? <TimesheetApprovals/> : <Navigate to="/login" />} />
-        <Route path="/timesheets/:id/detail" element={token ? <TimesheetDetail/> : <Navigate to="/login" />} />
-        <Route path="/employees" element={token ? <EmployeeMaster/> : <Navigate to="/login" />} />
-        <Route path="/leave-types" element={token ? <LeaveTypeMaster/> : <Navigate to="/login" />} />
-        <Route path="/performance" element={token ? <Performance/> : <Navigate to="/login" />} />
-        <Route path="/performance-approvals" element={token ? <PerformanceApprovals/> : <Navigate to="/login" />} />
-        <Route path="/" element={token ? <Dashboard/> : <Navigate to="/login" />} />
+        <Route path="/apply" element={<Protected><ApplyLeave/></Protected>} />
+        <Route path="/approvals" element={<Protected><ManagerApprovals/></Protected>} />
+        <Route path="/holidays" element={<Protected><Holidays/></Protected>} />
+        <Route path="/reports" element={<Protected><Reports/></Protected>} />
+        <Route path="/timesheets" element={<Protected><Timesheets/></Protected>} />
+        <Route path="/timesheet-approvals" element={<Protected><TimesheetApprovals/></Protected>} />
+        <Route path="/timesheets/:id/detail" element={<Protected><TimesheetDetail/></Protected>} />
+        <Route path="/employees" element={<Protected><EmployeeMaster/></Protected>} />
+        <Route path="/leave-types" element={<Protected><LeaveTypeMaster/></Protected>} />
+        <Route path="/performance" element={<Protected><Performance/></Protected>} />
+        <Route path="/performance-approvals" element={<Protected><PerformanceApprovals/></Protected>} />
+        <Route path="/" element={<Protected><Dashboard/></Protected>} />
       </Routes>
     </BrowserRouter>
   )
